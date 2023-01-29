@@ -1,7 +1,48 @@
+//========> sprite <==========//
+
+let sprites = {};
+
+let assetsLoading = 0;
+
+function loadSprite(fileName) {
+  assetsLoading++;
+
+  let spriteImage = new Image();
+
+  spriteImage.src = "./assets/" + fileName;
+
+  spriteImage.addEventListener("load", () => {
+    assetsLoading--;
+  });
+
+  return spriteImage;
+}
+
+function loadAssets(callback) {
+  sprites.background = loadSprite("pool.png");
+  sprites.WhiteBall = loadSprite("ball_white.png");
+  sprites.stick = loadSprite("stick.png");
+
+  console.log(sprites.background.src);
+
+  assetsLoadingLoop(callback);
+}
+
+function assetsLoadingLoop(callback) {
+  if (assetsLoading) {
+    requestAnimationFrame(assetsLoadingLoop.bind(this, callback));
+  } else {
+    callback();
+  }
+}
+
+//-------------------------------
+
 //=======> Vector <======//
 
 function Vector(x = 0, y = 0) {
-  (this.x = x), (this.y = y);
+  this.x = x,
+  this.y = y;
 }
 
 Vector.prototype.copy = function () {
@@ -21,13 +62,6 @@ Vector.prototype.length = function () {
   return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
 };
 
-let vector1 = new Vector(3, 6);
-
-let vector1Copy = vector1.copy();
-
-console.log(vector1.length());
-console.log(vector1Copy, "this victor1 copy's");
-
 //---------------------------
 
 //======> canvas <=====//
@@ -42,7 +76,7 @@ Canvas2D.prototype.clear = function () {
   this.cxt.clearRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
 };
 
-Canvas2D.prototype.drawImage = function (
+Canvas2D.prototype.drawImages = function (
   image,
   position = new Vector(),
   origin = new Vector(),
@@ -51,8 +85,36 @@ Canvas2D.prototype.drawImage = function (
   this.cxt.save();
   this.cxt.translate(position.x, position.y);
   this.cxt.rotate(rotation);
-  this.drawImage(image, -origin.x, -origin.y);
+  this.cxt.drawImage(image, -origin.y, -origin.y);
   this.cxt.restore();
 };
 
+let Canvas = new Canvas2D();
+
 //-----------------------
+
+// =====> game World <====//
+
+function GameWorld() {}
+
+GameWorld.prototype.update = function () {};
+
+GameWorld.prototype.draw = function () {
+
+    Canvas.drawImages(sprites.background)
+
+};
+
+let gameWorld = new GameWorld();
+
+///-------------------------
+
+function animate() {
+    Canvas.clear();
+  gameWorld.update();
+  gameWorld.draw();
+
+  requestAnimationFrame(animate);
+}
+
+loadAssets(animate);
