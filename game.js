@@ -41,8 +41,7 @@ function assetsLoadingLoop(callback) {
 //=======> Vector <======//
 
 function Vector(x = 0, y = 0) {
-  this.x = x,
-  this.y = y;
+  (this.x = x), (this.y = y);
 }
 
 Vector.prototype.copy = function () {
@@ -63,6 +62,76 @@ Vector.prototype.length = function () {
 };
 
 //---------------------------
+
+//=======> Mouse handler <========//
+
+function ButtonState() {
+  this.down = false;
+  this.pressed = false;
+}
+
+function MouseHandler() {
+  this.left = new ButtonState();
+  this.middle = new ButtonState();
+  this.right = new ButtonState();
+  this.position = new Vector();
+
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mousedown", handleKeyDown);
+  document.addEventListener("mouseup", handleKeyUp);
+}
+
+MouseHandler.prototype.reset = function () {
+  this.left.pressed = false;
+  this.right.pressed = false;
+  this.middle.pressed = false;
+}
+
+function handleMouseMove(e) {
+  Mouse.position = e.pageX;
+  Mouse.position = e.pageY;
+}
+
+function handleKeyDown(e) {
+  handleMouseMove(e);
+
+  if(e.button === 0 ) {
+
+    Mouse.left.down = true;
+    Mouse.left.pressed = true
+
+  } else if( e.button === 1  ) {
+    Mouse.middle.down = true;
+    Mouse.middle.pressed = true;
+
+  }else if (e.button === 2){
+    Mouse.right.down = true;
+    Mouse.right.pressed = true;
+  }
+
+}
+
+function handleKeyUp(e) {
+  handleMouseMove(e);
+  
+  if(e.button === 0 ) {
+
+    Mouse.left.down = false;
+
+  } else if( e.button === 1  ) {
+
+    Mouse.middle.down = false;
+
+  }else if (e.button === 2){
+
+    Mouse.right.down = false;
+  }
+
+}
+
+let Mouse = new MouseHandler();
+
+//----------------------------------
 
 //======> canvas <=====//
 
@@ -100,9 +169,7 @@ function GameWorld() {}
 GameWorld.prototype.update = function () {};
 
 GameWorld.prototype.draw = function () {
-
-    Canvas.drawImages(sprites.background)
-
+  Canvas.drawImages(sprites.background);
 };
 
 let gameWorld = new GameWorld();
@@ -110,7 +177,7 @@ let gameWorld = new GameWorld();
 ///-------------------------
 
 function animate() {
-    Canvas.clear();
+  Canvas.clear();
   gameWorld.update();
   gameWorld.draw();
 
