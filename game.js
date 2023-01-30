@@ -1,4 +1,8 @@
-const Ball_ORIGIN = new Vector(25,25)
+const Ball_ORIGIN = new Vector(25,25);
+
+const STICK_ORIGIN = new Vector(970, 11);
+const SHOOT_ORIGIN = new Vector(950, 11);
+
 
 //========> sprite <==========//
 
@@ -90,8 +94,8 @@ MouseHandler.prototype.reset = function () {
 }
 
 function handleMouseMove(e) {
-  Mouse.position = e.pageX;
-  Mouse.position = e.pageY;
+  Mouse.position.x = e.pageX;
+  Mouse.position.y = e.pageY;
 }
 
 function handleKeyDown(e) {
@@ -153,7 +157,44 @@ Ball.prototype.draw = function() {
   Canvas.drawImages(sprites.WhiteBall, this.position, Ball_ORIGIN )
 }
 
+
+Ball.prototype.shoot = function(power, rotation) {
+
+}
+
 //-------------------------------
+
+//==========> Stick <===========//
+
+function Stick ( position, onShoot ) {
+  this.position = position;
+  this.rotation = 0;
+  this.origin = STICK_ORIGIN.copy();
+  this.power = 0;
+  this.shoot = onShoot
+}
+
+
+Stick.prototype.draw = function() {
+  Canvas.drawImages(sprites.stick, this.position, this.origin, this.rotation)
+}
+
+
+Stick.prototype.update = function () {
+  this.updateRotation()
+
+}
+
+Stick.prototype.updateRotation = function() {
+  let opposite = Mouse.position.y - this.position.y;
+  let adjacent = Mouse.position.x - this.position.x;
+
+  this.rotation = Math.atan2(opposite, adjacent);
+
+}
+
+//--------------------------------
+
 
 
 //======> canvas <=====//
@@ -177,7 +218,7 @@ Canvas2D.prototype.drawImages = function (
   this.cxt.save();
   this.cxt.translate(position.x, position.y);
   this.cxt.rotate(rotation);
-  this.cxt.drawImage(image, -origin.y, -origin.y);
+  this.cxt.drawImage(image, -origin.x, -origin.y);
   this.cxt.restore();
 };
 
@@ -189,15 +230,22 @@ let Canvas = new Canvas2D();
 
 function GameWorld() {
 
-  this.WhiteBall = new Ball(new Vector(410, 413))
+  this.whiteBall = new Ball(new Vector(410, 413))
+
+  this.stick = new Stick(new Vector(413, 413), this.whiteBall.shoot.bind(this.whiteBall))
 
 }
 
-GameWorld.prototype.update = function () {};
+GameWorld.prototype.update = function () {
+  this.stick.update()
+};
 
 GameWorld.prototype.draw = function () {
   Canvas.drawImages(sprites.background);
-  this.WhiteBall.draw()
+
+  this.whiteBall.draw()
+
+  this.stick.draw()
 };
 
 let gameWorld = new GameWorld();
