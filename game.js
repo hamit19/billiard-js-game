@@ -1,3 +1,5 @@
+const Ball_ORIGIN = new Vector(25,25)
+
 //========> sprite <==========//
 
 let sprites = {};
@@ -133,6 +135,27 @@ let Mouse = new MouseHandler();
 
 //----------------------------------
 
+
+
+//======> White Ball <========//
+
+function Ball(position) {
+  this.position = position;
+  this.velocity = new Vector()
+}
+
+
+Ball.prototype.update = function() {
+
+}
+
+Ball.prototype.draw = function() {
+  Canvas.drawImages(sprites.WhiteBall, this.position, Ball_ORIGIN )
+}
+
+//-------------------------------
+
+
 //======> canvas <=====//
 
 function Canvas2D() {
@@ -164,12 +187,17 @@ let Canvas = new Canvas2D();
 
 // =====> game World <====//
 
-function GameWorld() {}
+function GameWorld() {
+
+  this.WhiteBall = new Ball(new Vector(410, 413))
+
+}
 
 GameWorld.prototype.update = function () {};
 
 GameWorld.prototype.draw = function () {
   Canvas.drawImages(sprites.background);
+  this.WhiteBall.draw()
 };
 
 let gameWorld = new GameWorld();
