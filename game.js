@@ -1,9 +1,8 @@
-const Ball_ORIGIN = new Vector(25,25);
+const Ball_ORIGIN = new Vector(25, 25);
 
 const STICK_ORIGIN = new Vector(970, 11);
 const SHOOT_ORIGIN = new Vector(950, 11);
-const DELTA = 1/100;
-
+const DELTA = 1 / 100;
 
 //========> sprite <==========//
 
@@ -92,7 +91,7 @@ MouseHandler.prototype.reset = function () {
   this.left.pressed = false;
   this.right.pressed = false;
   this.middle.pressed = false;
-}
+};
 
 function handleMouseMove(e) {
   Mouse.position.x = e.pageX;
@@ -102,83 +101,70 @@ function handleMouseMove(e) {
 function handleKeyDown(e) {
   handleMouseMove(e);
 
-  if(e.button === 0 ) {
-
+  if (e.button === 0) {
     Mouse.left.down = true;
-    Mouse.left.pressed = true
-
-  } else if( e.button === 1  ) {
+    Mouse.left.pressed = true;
+  } else if (e.button === 1) {
     Mouse.middle.down = true;
     Mouse.middle.pressed = true;
-
-  }else if (e.button === 2){
+  } else if (e.button === 2) {
     Mouse.right.down = true;
     Mouse.right.pressed = true;
   }
-
 }
 
 function handleKeyUp(e) {
   handleMouseMove(e);
-  
-  if(e.button === 0 ) {
 
+  if (e.button === 0) {
     Mouse.left.down = false;
-
-  } else if( e.button === 1  ) {
-
+  } else if (e.button === 1) {
     Mouse.middle.down = false;
-
-  }else if (e.button === 2){
-
+  } else if (e.button === 2) {
     Mouse.right.down = false;
   }
-
 }
 
 let Mouse = new MouseHandler();
 
 //----------------------------------
 
-
-
 //======> White Ball <========//
 
 function Ball(position) {
   this.position = position;
-  this.velocity = new Vector()
+  this.velocity = new Vector();
   this.moving = false;
 }
 
+Ball.prototype.update = function (delta) {
+  this.position.addTo(this.velocity.mult(delta));
+  this.velocity = this.velocity.mult(0.98);
 
-Ball.prototype.update = function(delta) {
-  this.position.addTo(this.velocity.mult(delta))
-  this.velocity = this.velocity.mult(.98)
-
-  if( this.velocity.length() < 5 ) {
-    this.velocity = new Vector() ;
+  if (this.velocity.length() < 5) {
+    this.velocity = new Vector();
     this.moving = false;
   }
+};
 
-}
+Ball.prototype.draw = function () {
+  Canvas.drawImages(sprites.WhiteBall, this.position, Ball_ORIGIN);
+};
 
-Ball.prototype.draw = function() {
-  Canvas.drawImages(sprites.WhiteBall, this.position, Ball_ORIGIN )
-}
+Ball.prototype.shoot = function (power, rotation) {
+  this.velocity = new Vector(
+    power * Math.cos(rotation),
+    power * Math.sin(rotation)
+  );
 
-
-Ball.prototype.shoot = function(power, rotation) {
-   this.velocity =  new Vector(power * Math.cos(rotation),  power * Math.sin(rotation))
-
-   this.moving = true;
-
-}
+  this.moving = true;
+};
 
 //-------------------------------
 
 //==========> Stick <===========//
 
-function Stick ( position, onShoot ) {
+function Stick(position, onShoot) {
   this.position = position;
   this.rotation = 0;
   this.origin = STICK_ORIGIN.copy();
@@ -187,27 +173,21 @@ function Stick ( position, onShoot ) {
   this.shut = false;
 }
 
-
-Stick.prototype.draw = function() {
-  Canvas.drawImages(sprites.stick, this.position, this.origin, this.rotation)
-}
-
+Stick.prototype.draw = function () {
+  Canvas.drawImages(sprites.stick, this.position, this.origin, this.rotation);
+};
 
 Stick.prototype.update = function () {
-  this.updateRotation()
+  this.updateRotation();
 
-  if(Mouse.left.down) {
-
-    this.increasePower()
-
-  }else if(this.power > 0 ) {
-    this.shoot()
+  if (Mouse.left.down) {
+    this.increasePower();
+  } else if (this.power > 0) {
+    this.shoot();
   }
+};
 
-}
-
-Stick.prototype.shoot = function() {
-
+Stick.prototype.shoot = function () {
   this.onShoot(this.power, this.rotation);
 
   this.power = 0;
@@ -215,30 +195,25 @@ Stick.prototype.shoot = function() {
   this.origin = SHOOT_ORIGIN.copy();
 
   this.shut = true;
-}
+};
 
-
-Stick.prototype.increasePower = function() {
+Stick.prototype.increasePower = function () {
   this.power += 100;
   this.origin.x += 5;
+};
 
-}
-
-Stick.prototype.updateRotation = function() {
+Stick.prototype.updateRotation = function () {
   let opposite = Mouse.position.y - this.position.y;
   let adjacent = Mouse.position.x - this.position.x;
 
   this.rotation = Math.atan2(opposite, adjacent);
+};
 
-}
-
-Stick.prototype.rePosition = function(position) {
-  this.position = position.copy()
-}
+Stick.prototype.rePosition = function (position) {
+  this.position = position.copy();
+};
 
 //--------------------------------
-
-
 
 //======> canvas <=====//
 
@@ -272,29 +247,30 @@ let Canvas = new Canvas2D();
 // =====> game World <====//
 
 function GameWorld() {
+  this.whiteBall = new Ball(new Vector(410, 413));
 
-  this.whiteBall = new Ball(new Vector(410, 413))
-
-  this.stick = new Stick(new Vector(413, 413), this.whiteBall.shoot.bind(this.whiteBall))
-
+  this.stick = new Stick(
+    new Vector(413, 413),
+    this.whiteBall.shoot.bind(this.whiteBall)
+  );
 }
 
 GameWorld.prototype.update = function () {
-  this.stick.update()
-  this.whiteBall.update(DELTA)
+  this.stick.update();
+  this.whiteBall.update(DELTA);
 
-  if(!this.whiteBall.moving && this.stick.shut ) {
-    this.stick.rePosition(this.whiteBall.position)
-    this.stick.origin = STICK_ORIGIN.copy()
+  if (!this.whiteBall.moving && this.stick.shut) {
+    this.stick.rePosition(this.whiteBall.position);
+    this.stick.origin = STICK_ORIGIN.copy();
   }
 };
 
 GameWorld.prototype.draw = function () {
   Canvas.drawImages(sprites.background);
 
-  this.whiteBall.draw()
+  this.whiteBall.draw();
 
-  this.stick.draw()
+  this.stick.draw();
 };
 
 let gameWorld = new GameWorld();
