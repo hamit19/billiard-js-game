@@ -2,6 +2,7 @@ const Ball_ORIGIN = new Vector(25,25);
 
 const STICK_ORIGIN = new Vector(970, 11);
 const SHOOT_ORIGIN = new Vector(950, 11);
+const DELTA = 1/100;
 
 
 //========> sprite <==========//
@@ -146,10 +147,18 @@ let Mouse = new MouseHandler();
 function Ball(position) {
   this.position = position;
   this.velocity = new Vector()
+  this.moving = false;
 }
 
 
-Ball.prototype.update = function() {
+Ball.prototype.update = function(delta) {
+  this.position.addTo(this.velocity.mult(delta))
+  this.velocity = this.velocity.mult(.98)
+
+  if( this.velocity.length() < 5 ) {
+    this.velocity = new Vector() ;
+    this.moving = false;
+  }
 
 }
 
@@ -159,6 +168,9 @@ Ball.prototype.draw = function() {
 
 
 Ball.prototype.shoot = function(power, rotation) {
+   this.velocity =  new Vector(power * Math.cos(rotation),  power * Math.sin(rotation))
+
+   this.moving = true;
 
 }
 
@@ -171,7 +183,8 @@ function Stick ( position, onShoot ) {
   this.rotation = 0;
   this.origin = STICK_ORIGIN.copy();
   this.power = 0;
-  this.shoot = onShoot
+  this.onShoot = onShoot;
+  this.shut = false;
 }
 
 
@@ -183,6 +196,32 @@ Stick.prototype.draw = function() {
 Stick.prototype.update = function () {
   this.updateRotation()
 
+  if(Mouse.left.down) {
+
+    this.increasePower()
+
+  }else if(this.power > 0 ) {
+    this.shoot()
+  }
+
+}
+
+Stick.prototype.shoot = function() {
+
+  this.onShoot(this.power, this.rotation);
+
+  this.power = 0;
+
+  this.origin = SHOOT_ORIGIN.copy();
+
+  this.shut = true;
+}
+
+
+Stick.prototype.increasePower = function() {
+  this.power += 100;
+  this.origin.x += 5;
+
 }
 
 Stick.prototype.updateRotation = function() {
@@ -191,6 +230,10 @@ Stick.prototype.updateRotation = function() {
 
   this.rotation = Math.atan2(opposite, adjacent);
 
+}
+
+Stick.prototype.rePosition = function(position) {
+  this.position = position.copy()
 }
 
 //--------------------------------
@@ -238,6 +281,12 @@ function GameWorld() {
 
 GameWorld.prototype.update = function () {
   this.stick.update()
+  this.whiteBall.update(DELTA)
+
+  if(!this.whiteBall.moving && this.stick.shut ) {
+    this.stick.rePosition(this.whiteBall.position)
+    this.stick.origin = STICK_ORIGIN.copy()
+  }
 };
 
 GameWorld.prototype.draw = function () {
